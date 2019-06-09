@@ -7,7 +7,7 @@ import sounddevice as sd
 
 RATE = 22050
 CHUNK_SIZE = 1024
-SILENT_THRESH = 30
+SILENT_THRESH = 27
 FORMAT = pyaudio.paInt16
 
 def is_silent(chunk):
@@ -60,16 +60,18 @@ def normalize(audio):
 # r = trim(r)
 # return sample_width, r
 
-def record():
+def record(max_duration=20):
     recorded = []
     p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paInt16, channels=1, rate=RATE, input=True,
+    stream = p.open(format=FORMAT, channels=1, rate=RATE, input=True,
                     frames_per_buffer=CHUNK_SIZE)
 
     num_silence = 0
     recording = False
     print('recording...')
-    while num_silence < 20:
+    max_chunk = max_duration * RATE // CHUNK_SIZE
+
+    while num_silence < 25 and len(recorded) <= max_chunk:
         data = stream.read(CHUNK_SIZE)
         a = np.frombuffer(data, dtype=np.int16) / 2**15
         if is_silent(a):
@@ -84,8 +86,11 @@ def record():
             num_silence = 0
         recorded.append(a)
 
-    if len(recorded) > 0:
-        print('Silence detected, stop recording')
+    if len(recorded) > max_chunk:
+        print(str(max_duration) + 's exceeded, recording stopped.')
+        recorded = np.concatenate(recorded)
+    elif len(recorded) > 0:
+        print('Silence detected, recording stopped.')
         recorded = np.concatenate(recorded)
         # recorded, _ = librosa.effects.trim(recorded, top_db=SILENT_THRESH)
     else:

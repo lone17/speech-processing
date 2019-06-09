@@ -1,6 +1,7 @@
 import os
-import numpy as np
 import librosa
+import numpy as np
+
 from helpers import *
 
 def read_audio(file_path):

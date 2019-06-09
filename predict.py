@@ -1,6 +1,8 @@
+import os
 import numpy as np
 import pandas as pd
-import os
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
 from helpers import *
 
 def predict(model_dir, data):
@@ -23,19 +25,18 @@ def predict(model_dir, data):
 
     return pred
 
-def get_submission(model_dir, data_path='data'):
-    model_dir = str(model_dir)
-
-    X_test = np.load('X_test.npy')
-
+def get_submission(pred, data_path='data'):
     files = sorted(os.listdir(data_path), key=lambda f: int(f.split('.')[0]))
-
-    pred = predict(model_dir, data)
 
     gender = pred // 3
     accent = pred % 3
     submit = pd.DataFrame(dict(id=files, gender=gender, accent=accent))
     submit[['id', 'gender', 'accent']].to_csv('submission.csv', index=False)
 
-# X = np.load('X_train.npy')
+# X = np.load('voice/X_test_10s.npy')
+# y = np.load('y_test.npy')
 # pred = predict('model', X)
+
+# print(accuracy_score(y, pred))
+# print(classification_report(y, pred))
+# print(confusion_matrix(y, pred))

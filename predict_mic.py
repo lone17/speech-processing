@@ -1,7 +1,7 @@
 from preprocess import *
-from predict import *
 from record import *
 from helpers import *
+from cnn import *
 
 model_dir = 'model'
 mean, std = np.load(model_dir + '/scale.npy')
@@ -19,7 +19,7 @@ def predict_mic():
     audio = audio[None, :, :, None]
     audio = (audio - mean) / std
     for i, model in enumerate(models):
-        tmp = model.predict(audio, batch_size=64, verbose=1)
+        tmp = model.predict(audio, batch_size=64, verbose=0)
         if i == 0:
             pred = tmp * 10000
         else:

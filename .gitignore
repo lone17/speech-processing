@@ -1,0 +1,5 @@
+__*
+voice/
+*.npy
+*.csv
+*.txt
