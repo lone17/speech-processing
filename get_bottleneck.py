@@ -1,10 +1,11 @@
 import os
 import numpy as np
 
-from helpers import get_model, config
+from helpers import config
+from cnn import get_model
 
 
-X = np.load('voice/X_test_10s.npy')
+X = np.load('voice/X_train_10s.npy')
 bottleneck = []
 
 model_dir = 'model'
@@ -20,4 +21,4 @@ for i in range(config.num_folds):
     bottleneck.append(tmp)
 
 bottleneck = np.hstack(bottleneck)
-np.save('bottleneck_test', bottleneck)
+np.save('bottleneck_train_new2', bottleneck)

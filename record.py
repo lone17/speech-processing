@@ -7,13 +7,12 @@ import sounddevice as sd
 
 RATE = 22050
 CHUNK_SIZE = 1024
-SILENT_THRESH = 27
+SILENT_THRESH = 20
 FORMAT = pyaudio.paInt16
 
 def is_silent(chunk):
-    db = librosa.core.power_to_db(chunk)[0]
-    # print(db)
-    return db < - SILENT_THRESH
+    db = librosa.core.power_to_db(chunk)
+    return np.max(db) < - SILENT_THRESH
 
 def normalize(audio):
     "Average the volume out"
@@ -71,7 +70,7 @@ def record(max_duration=20):
     print('recording...')
     max_chunk = max_duration * RATE // CHUNK_SIZE
 
-    while num_silence < 25 and len(recorded) <= max_chunk:
+    while num_silence < 30 and len(recorded) <= max_chunk:
         data = stream.read(CHUNK_SIZE)
         a = np.frombuffer(data, dtype=np.int16) / 2**15
         if is_silent(a):

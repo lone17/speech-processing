@@ -1,6 +1,10 @@
+import os
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from imutils import paths
+from sklearn.model_selection import train_test_split
 
 def transform_target(y):
     y = y.apply(lambda i: label_idx[i])
@@ -69,3 +73,16 @@ def plot_prediction(probs, prediction_str=''):
     cv2.imshow('prediction', img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+def train_val_split(val_size=0.2):
+    data_dir = 'voice\\train'
+
+    audio_paths = list(paths.list_files(data_dir))
+    audio_labels = [path.split(os.sep)[-2] for path in audio_paths]
+    audio_labels = [label_idx[label] for label in audio_labels]
+
+    train_set, val_set = train_test_split(audio_paths, test_size=val_size,
+                                          stratify=audio_labels, random_state=17)
+
+    open('train.txt', 'w').write('\n'.join(train_set))
+    open('val.txt', 'w').write('\n'.join(val_set))

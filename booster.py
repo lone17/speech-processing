@@ -8,17 +8,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.utils import class_weight
 
-X = np.load('bottleneck_train.npy')
-y = np.load('y_train.npy')
-X_test = np.load('bottleneck_test.npy')
-y_test = np.load('y_test.npy')
+X = np.load('bottleneck_train_new2.npy')
+y = np.load('y_train_10s.npy')
+X_test = np.load('bottleneck_test_new.npy')
+y_test = np.load('y_test_10s.npy')
 
 X_train, X_val, y_train, y_val = train_test_split(X, y,
                                                   test_size=0.2,
                                                   random_state=17,
                                                   stratify=y)
 
-# def xgboost():
 
 class_weights = class_weight.compute_class_weight('balanced',
                                                  np.unique(y_train),
@@ -33,7 +32,7 @@ params = {
     'predictor': 'cpu_predictor',
     'objective': 'multi:softprob',
     'num_class': 6,
-    'max_depth': 10
+    'max_depth': 30
 }
 
 evallist = [(dtrain, 'train'), (dval, 'eval')]
@@ -54,8 +53,7 @@ print(confusion_matrix(y_test, y_pred))
 
 # xgb.plot_importance(bst)
 
-# bst.save_model('xgboost_clf.model')
-# pickle.dump(bst, open('xgboost_clf.pickle', 'wb'))
+pickle.dump(bst, open('xgboost_clf.pickle', 'wb'))
 #
 # del y_pred
 #

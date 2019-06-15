@@ -5,11 +5,13 @@ import pickle
 import librosa
 import xgboost as xgb
 import sounddevice as sd
+from keras.models import load_model
 
-from preprocess import *
+import cnn
 from record import *
 from helpers import *
-import cnn
+from preprocess import *
+from generate_data import get_chunks
 print('<<<<< Dependencies are loaded.')
 
 print('>>>>> Loading models...')
@@ -19,7 +21,7 @@ confidence_threshold = 0.5
 max_duration = 20
 
 cnn_model_dir = 'model'
-xgboost_model = 'xgboost_clf.pickle'
+xgboost_model = 'xgboost_clf_new.pickle'
 
 mean, std = np.load(cnn_model_dir + '/scale.npy')
 
@@ -42,10 +44,10 @@ def predict(audio):
     if use_xgboost:
         bottleneck = []
     else:
-        probs = 10000
+        probs = 10**len(extractors)
 
     for i, model in enumerate(extractors):
-        tmp = model.predict(audio, batch_size=1, verbose=0)
+        tmp = model.predict(audio, verbose=0)
         if use_xgboost:
             bottleneck.append(tmp)
         else:
@@ -55,8 +57,30 @@ def predict(audio):
         bottleneck = np.hstack(bottleneck)
         dtest = xgb.DMatrix(bottleneck)
         probs = classifier.predict(dtest, ntree_limit=classifier.best_ntree_limit)
+    else:
+        probs /= np.sum(probs)
+        # print(probs)
 
     return probs[0]
+
+# new_model = load_model('model.63-0.51.hdf5')
+# def predict_new(audio):
+#     chunks = get_chunks(audio)
+#
+#     if len (chunks) > 1:
+#         chunks = chunks[:-1]
+#     probs = None
+#     for chunk in chunks:
+#         chunk = librosa.feature.mfcc(chunk, sr=22050, n_mfcc=40)
+#         tmp = new_model.predict(chunk[None, :, :, None])
+#         if probs is None:
+#             probs = tmp
+#         else:
+#             probs = probs * tmp / (probs * tmp + (1 - probs) * (1 - tmp))
+#
+#     probs /= np.sum(probs)
+#
+#     return probs[0]
 
 os.system('cls')
 
@@ -76,7 +100,7 @@ while True:
 
     if user_input == 'm':
         audio = record(max_duration=20)
-        sd.play(audio, 22050, blocking=True)
+        # sd.play(audio, 22050, blocking=True)
     elif user_input == 'f':
         file_path = input('File location: ')
         if os.path.exists(file_path):
